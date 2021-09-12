@@ -1,0 +1,27 @@
+{
+  "type": "module",
+  "name": "arweave-node-tools",
+  "version": "1.0.0",
+  "description": "Get the fastest Arweave nodes (by ping time) for use with your personal or corporate node",
+  "main": "peers.js",
+  "scripts": {
+    "peers": "node --no-warnings peers",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "arweave",
+    "arweave-node",
+    "fastest-node",
+    "fastest-arweave-node",
+    "ar",
+    "AR"
+  ],
+  "author": "Antonios P.",
+  "license": "ISC",
+  "dependencies": {
+    "cli-progress": "^3.9.0",
+    "node-fetch": "^3.0.0",
+    "table": "^6.7.1"
+  }
+}
