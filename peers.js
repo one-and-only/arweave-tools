@@ -17,14 +17,12 @@ var peerList = [];
 var tableData = [];
 var exitCode = 0; // used for rich status messages
 var numOfTopPeers = 0;
+// HACK: somehow the progress bar doesn't update properly after all the promises are done
+var numOfTotalPeers = 0;
+var pingsDone = 0;
+
 const pingBar = new SingleBar({
     format: 'Pinging Nodes |' + '\u001b[32m{bar}\u001b[0m' + '| {percentage}% || {value}/{total} Nodes',
-    barCompleteChar: '\u2588',
-    barIncompleteChar: '\u2591',
-    hideCursor: true,
-});
-const sortBar = new SingleBar({
-    format: 'Sorting Node Ping Times |' + '\u001b[32m{bar}\u001b[0m' + '| {percentage}% || {value}/{total} Nodes',
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true,
@@ -32,6 +30,7 @@ const sortBar = new SingleBar({
 
 fetch('http://arweave.net/peers').then(response => response.json()).then(async peers => {
     pingBar.start(peers.length, 0);
+    numOfTotalPeers = peers.length;
 
     let promises = [];
     for (let i = 0; i < peers.length; i++) {
@@ -42,8 +41,8 @@ fetch('http://arweave.net/peers').then(response => response.json()).then(async p
     }
 
     Promise.all(promises).then(async () => {
-        pingBar.stop();
-        sortBar.start(peerList.length, 0);
+        console.log("All promises done");
+        console.clear();
 
         peerList.sort(ascendingSort);
         tableData.push(['    Node IP', ' Ping Time (ms)']); // table header
@@ -103,14 +102,17 @@ function pingNode(nodeIP) {
             output += data;
         });
         program.on('exit', () => {
+            pingsDone++;
+            pingBar.update(pingsDone);
+            pingsDone + 2 == numOfTotalPeers && pingBar.stop(); // WHY DOES THE 2 NEED TO BE THERE?!?!?!??!?!?
+
             const pingTime = output.includes('time=') ? parseFloat(output.split('time=')[1].split(' ')[0]) : Infinity;
-            peerList.push([nodeIP, pingTime]) && pingBar.increment() && resolve(pingTime != Infinity ? true : false);
+            peerList.push([nodeIP, pingTime]) && resolve(pingTime != Infinity ? true : false);
         });
     });
 }
 
 function ascendingSort(a, b) {
-    sortBar.increment();
     if (a[1] === b[1]) {
         return 0;
     }
